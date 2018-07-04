@@ -22,7 +22,7 @@ def releaseVersion = this.version
 def releaseArtifactId = project.name
 def artifactName
 
-if(hasProperty("buildFlavor")) {
+if(hasProperty("buildFlavor") && !getProperty("buildFlavor").isEmpty()) {
     def flavorName = getProperty("buildFlavor")
     flavorName = flavorName.substring(0,1).toLowerCase() + flavorName.substring(1)
     flavorName = flavorName.replace("Debug", "-debug").replace("Release", "-release")
@@ -31,7 +31,7 @@ if(hasProperty("buildFlavor")) {
     artifactName = releaseArtifactId + ".aar"
 }
 
-if(hasProperty("artifactSuffix")) {
+if(hasProperty("artifactSuffix") && !getProperty("artifactSuffix").isEmpty()) {
     releaseArtifactId += "-" + getProperty("artifactSuffix")
 }
 
