@@ -56,11 +56,7 @@ if(hasProperty("buildFlavor") && !getProperty("buildFlavor").isEmpty()) {
     def flavorName = getProperty("buildFlavor")
     flavorName = flavorName.substring(0,1).toLowerCase() + flavorName.substring(1)
     flavorName = flavorName.replace("Debug", "-debug").replace("Release", "-release")
-    if(artifactName.isEmpty()) {
-        artifactName = releaseArtifactId + "-" + flavorName + ".aar"
-    } else {
-        artifactName = artifactName + "-" + flavorName + ".aar"
-    }
+    artifactName = releaseArtifactId + "-" + flavorName + ".aar"
 } else {
     artifactName = releaseArtifactId + ".aar"
 }
@@ -69,13 +65,29 @@ if(hasProperty("artifactSuffix") && !getProperty("artifactSuffix").isEmpty()) {
     releaseArtifactId += "-" + getProperty("artifactSuffix")
 }
 
-println "Artifact name: \n\t${artifactName}"
-println "Target gradle implementation:\n\timplementation '${releaseGroup}:${releaseArtifactId}:${version}'"
+println "Artifact {" +
+        "\n\tid: ${releaseArtifactId}," +
+        "\n\tgroup: ${releaseGroup}," +
+        "\n\tversion: ${releaseVersion}" +
+        "\n\tname (file): $buildDir/outputs/aar/${artifactName}" +
+        "\n\troot project name: ${rootProject.name}" +
+        "\n\tproject name: ${project.name}" +
+        "\n\timplementation example: implementation '${releaseGroup}:${releaseArtifactId}:${version}'" +
+        "\n}"
+
+// rename output lib file to artifactName with aar extension
+android.libraryVariants.all { variant ->
+    variant.outputs.all { output ->
+        if (outputFile != null && outputFileName.endsWith('.aar')) {
+            outputFileName = "${artifactName}"
+        }
+    }
+}
 
 // TASKS
 tasks.withType(Jar) {
     from(project.projectDir) {
-        include 'LICENSE.txt'
+        include 'LICENSE'
         into 'META-INF'
     }
 }
@@ -143,28 +155,57 @@ publishing {
     }
 }
 
-//if (hasProperty("artifactoryUser") && hasProperty("artifactoryPass")) {
-//
-//    artifactory {
-//        contextUrl = getProperty("artifactoryUrl")
-//        publish {
-//            repository {
-//                version = releaseVersion
-//                repoKey = "libs-release-local"
-//                username = getProperty("artifactoryUser")
-//                password = getProperty("artifactoryPass")
-//                maven = true
-//            }
-//
-//            defaults {
-//                publications(releaseArtifactId)
-//                publishConfigs('archives')
-//                properties = ['qa.level': 'basic', 'q.os': 'android', 'dev.team': 'core']
-//                publishBuildInfo = true
-//                publishArtifacts = true
-//                publishPom = true
-//                publishIvy = false
-//            }
-//        }
-//    }
-//}
+if (hasProperty("artifactoryUser") && hasProperty("artifactoryPass")) {
+    artifactory {
+        contextUrl = getProperty("artifactoryUrl")
+        publish {
+            repository {
+                version = releaseVersion
+                repoKey = "libs-release-local"
+                username = getProperty("artifactoryUser")
+                password = getProperty("artifactoryPass")
+                maven = true
+            }
+
+            defaults {
+                publications(releaseArtifactId)
+                publishConfigs('archives')
+                properties = ['qa.level': 'basic', 'q.os': 'android', 'dev.team': 'core']
+                publishBuildInfo = true
+                publishArtifacts = true
+                publishPom = true
+                publishIvy = false
+            }
+        }
+    }
+}
+
+if (hasProperty("bintray_user") && hasProperty("bintray_key")) {
+    if(!hasProperty("bintray_repo")) {
+        throw new GradleException('"bintray_repo" name required')
+    }
+    if(!hasProperty("bintray_vcs")) {
+        throw new GradleException('"bintray_vcs" url required')
+    }
+    if(!hasProperty("bintray_org")) {
+        setProperty("bintray_org", getProperty("bintray_user"))
+    }
+
+    bintray {
+        user = getProperty("bintray_user")
+        key = getProperty("bintray_key")
+        pkg {
+            repo = getProperty("bintray_repo")
+            name = releaseArtifactId
+            userOrg = getProperty("bintray_org")
+            licenses = ['MIT']
+            vcsUrl = getProperty("bintray_vcs")
+
+            version {
+                name = version
+                desc = pomDescription
+                released = new Date()
+            }
+        }
+    }
+}
