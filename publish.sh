@@ -13,6 +13,8 @@ artifactSuffixPom=""
 rootProjectName=$(${gradlePath} projects | grep "Root project '" | awk -F "'" '{print $2}')
 artifactName=${rootProjectName}
 moduleName=""
+tasks="0"
+publishType="local"
 
 function clean() {
     ./gradlew :clean
@@ -25,10 +27,12 @@ function usage() {
     echo "    -h --help         Print this help"
     echo "    -p --project      Sub project (module) name (current: ${rootProjectName})"
     echo "       --list-flavors Print flavors list"
+    echo "       --tasks        Print gradle tasks with given config"
     echo "    -f --flavor       Choose flavor name by \"--list-flavors\""
     echo "    -s --suffix       Artifact suffix"
     echo "    -n --name         Artifact name (using instead of project.name)"
     echo "       --clean        Clean build"
+    echo "    -t --type         Publish type. Default: \"local\". Variants: \"local\", \"bintray\", \"artifactory\""
     echo ""
 }
 
@@ -48,6 +52,11 @@ case $key in
     --list-flavors)
     printFlavors
     exit
+    ;;
+    --tasks)
+    tasks="1"
+    shift # past argument
+    shift # past value
     ;;
     --clean)
     clean
@@ -73,6 +82,16 @@ case $key in
     shift # past argument
     shift # past value
     ;;
+    -t|--type)
+    publishType="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    *)
+          # unknown option
+          echo "Unknown option ${key} ${2}"
+          exit 1
+    ;;
 esac
 done
 
@@ -96,8 +115,29 @@ then
     moduleName=""
 fi
 
+if [ "${tasks}" == "1" ]
+then
+    ${gradlePath} \
+    -PbuildFlavor=${flavor} \
+    -PartifactSuffix=${artifactSuffix} \
+    -PbuildArtifactName=${artifactName} \
+    ${moduleName}:tasks
+    exit 0
+fi
 
-echo ${gradlePath} \
+publishTypeInternal=""
+case "${publishType}" in
+    local)
+        publishTypeInternal="publishToMavenLocal" ;;
+    bintray)
+        publishTypeInternal="bintrayUpload" ;;
+    *)
+        echo "Unknown publish type: ${publishType}"
+        exit 1
+        ;;
+esac
+
+${gradlePath} \
     -PbuildFlavor=${flavor} \
     -PartifactSuffix=${artifactSuffix} \
     -PbuildArtifactName=${artifactName} \
@@ -106,4 +146,4 @@ echo ${gradlePath} \
     ${moduleName}:androidJavadoc \
     ${moduleName}:androidJavadocJar \
     ${moduleName}:generatePomFileFor${projectNameCap}${artifactSuffixPom}Publication \
-    ${moduleName}:publishToMavenLocal
+    ${moduleName}:${publishTypeInternal}
