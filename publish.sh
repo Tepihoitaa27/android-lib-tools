@@ -15,6 +15,7 @@ artifactName=${rootProjectName}
 moduleName=""
 tasks="0"
 publishType="local"
+verbosity=""
 
 function clean() {
     ./gradlew :clean
@@ -33,6 +34,7 @@ function usage() {
     echo "    -n --name         Artifact name (using instead of project.name)"
     echo "       --clean        Clean build"
     echo "    -t --type         Publish type. Default: \"local\". Variants: \"local\", \"bintray\", \"artifactory\""
+    echo "    -v --verbosity    Gradle verbosity: info, debug, stacktrace etc"
     echo ""
 }
 
@@ -87,6 +89,11 @@ case $key in
     shift # past argument
     shift # past value
     ;;
+    -v|--verbosity)
+    publishType="$2"
+    shift # past argument
+    shift # past value
+    ;;
     *)
           # unknown option
           echo "Unknown option ${key} ${2}"
@@ -125,12 +132,19 @@ then
     exit 0
 fi
 
+if [ "${verbosity}" != "" ]
+then
+    verbosity="--${verbosity}"
+fi
+
 publishTypeInternal=""
 case "${publishType}" in
     local)
-        publishTypeInternal="publishToMavenLocal" ;;
+        publishTypeInternal="publishToMavenLocal"
+        ;;
     bintray)
-        publishTypeInternal="bintrayUpload" ;;
+        publishTypeInternal="bintrayUpload"
+        ;;
     *)
         echo "Unknown publish type: ${publishType}"
         exit 1
@@ -146,4 +160,4 @@ ${gradlePath} \
     ${moduleName}:androidJavadoc \
     ${moduleName}:androidJavadocJar \
     ${moduleName}:generatePomFileFor${projectNameCap}${artifactSuffixPom}Publication \
-    ${moduleName}:${publishTypeInternal}
+    ${moduleName}:${publishTypeInternal} ${verbosity}
