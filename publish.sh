@@ -10,6 +10,7 @@ flavor=""
 artifactSuffix=""
 artifactSuffixPom=""
 projectName=$(${gradlePath} projects | grep "Root project '" | awk -F "'" '{print $2}')
+artifactName=${projectName}
 
 function clean() {
     ./gradlew :clean
@@ -24,6 +25,7 @@ function usage() {
     echo "       --list-flavors Print flavors list"
     echo "    -f --flavor       Choose flavor name by \"--list-flavors\""
     echo "    -s --suffix       Artifact suffix"
+    echo "    -n --name         Artifact name (using instead of project.name)"
     echo "       --clean        Clean build"
     echo ""
 }
@@ -51,6 +53,11 @@ case $key in
     ;;
     -s|--suffix)
     artifactSuffix="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -n|--name)
+    artifactName="$2"
     shift # past argument
     shift # past value
     ;;
@@ -83,7 +90,7 @@ then
     exit 1
 fi
 
-${gradlePath} -PbuildFlavor=${flavor} -PartifactSuffix=${artifactSuffix} \
+${gradlePath} -PbuildFlavor=${flavor} -PartifactSuffix=${artifactSuffix} -PbuildArtifactName=${artifactName} \
     :assemble${flavorCap} \
     :androidSources :androidJavadoc :androidJavadocJar \
     :generatePomFileFor${projectNameCap}${artifactSuffixPom}Publication \

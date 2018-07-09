@@ -40,18 +40,27 @@ task printFlavors {
 }
 
 def pomDescription = (hasProperty("pomDescription") ? getProperty("pomDescription") : "Minter Blockchain Android SDK")
+
 group = getProperty("group")
 version = android.defaultConfig.versionName
 def releaseGroup = this.group
 def releaseVersion = this.version
 def releaseArtifactId = project.name
-def artifactName
+def artifactName = ""
+
+if(hasProperty("buildArtifactName") && !getProperty("buildArtifactName").isEmpty()) {
+    releaseArtifactId = getProperty("buildArtifactName")
+}
 
 if(hasProperty("buildFlavor") && !getProperty("buildFlavor").isEmpty()) {
     def flavorName = getProperty("buildFlavor")
     flavorName = flavorName.substring(0,1).toLowerCase() + flavorName.substring(1)
     flavorName = flavorName.replace("Debug", "-debug").replace("Release", "-release")
-    artifactName = project.name + "-" + flavorName + ".aar"
+    if(artifactName.isEmpty()) {
+        artifactName = releaseArtifactId + "-" + flavorName + ".aar"
+    } else {
+        artifactName = artifactName + "-" + flavorName + ".aar"
+    }
 } else {
     artifactName = releaseArtifactId + ".aar"
 }
