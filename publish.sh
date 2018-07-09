@@ -9,8 +9,10 @@ gradlePath="${PWD}/gradlew"
 flavor=""
 artifactSuffix=""
 artifactSuffixPom=""
-projectName=$(${gradlePath} projects | grep "Root project '" | awk -F "'" '{print $2}')
-artifactName=${projectName}
+
+rootProjectName=$(${gradlePath} projects | grep "Root project '" | awk -F "'" '{print $2}')
+artifactName=${rootProjectName}
+moduleName=""
 
 function clean() {
     ./gradlew :clean
@@ -21,7 +23,7 @@ function usage() {
     echo ""
     echo "./publish.sh"
     echo "    -h --help         Print this help"
-    echo "    -p --project      Project artifact name (current: ${projectName})"
+    echo "    -p --project      Sub project (module) name (current: ${rootProjectName})"
     echo "       --list-flavors Print flavors list"
     echo "    -f --flavor       Choose flavor name by \"--list-flavors\""
     echo "    -s --suffix       Artifact suffix"
@@ -56,6 +58,11 @@ case $key in
     shift # past argument
     shift # past value
     ;;
+    -p|--project)
+    moduleName=":$2"
+    shift # past argument
+    shift # past value
+    ;;
     -n|--name)
     artifactName="$2"
     shift # past argument
@@ -70,7 +77,7 @@ esac
 done
 
 flavorCap=$(capitalize ${flavor})
-projectNameCap=$(capitalize ${projectName})
+projectNameCap=$(capitalize ${rootProjectName})
 
 
 if [ "${artifactSuffix}" != "" ]
@@ -84,14 +91,19 @@ then
     exit 1
 fi
 
-if [ "${projectName}" == "" ]
+if [ "${moduleName}" == "${rootProjectName}" ]
 then
-    echo "Project name (artifact id) required!"
-    exit 1
+    moduleName=""
 fi
 
-${gradlePath} -PbuildFlavor=${flavor} -PartifactSuffix=${artifactSuffix} -PbuildArtifactName=${artifactName} \
-    :assemble${flavorCap} \
-    :androidSources :androidJavadoc :androidJavadocJar \
-    :generatePomFileFor${projectNameCap}${artifactSuffixPom}Publication \
-    :publishToMavenLocal
+
+echo ${gradlePath} \
+    -PbuildFlavor=${flavor} \
+    -PartifactSuffix=${artifactSuffix} \
+    -PbuildArtifactName=${artifactName} \
+    ${moduleName}:assemble${flavorCap} \
+    ${moduleName}:androidSources \
+    ${moduleName}:androidJavadoc \
+    ${moduleName}:androidJavadocJar \
+    ${moduleName}:generatePomFileFor${projectNameCap}${artifactSuffixPom}Publication \
+    ${moduleName}:publishToMavenLocal
