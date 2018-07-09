@@ -154,31 +154,31 @@ publishing {
         }
     }
 }
-
-if (hasProperty("artifactoryUser") && hasProperty("artifactoryPass")) {
-    artifactory {
-        contextUrl = getProperty("artifactoryUrl")
-        publish {
-            repository {
-                version = releaseVersion
-                repoKey = "libs-release-local"
-                username = getProperty("artifactoryUser")
-                password = getProperty("artifactoryPass")
-                maven = true
-            }
-
-            defaults {
-                publications(releaseArtifactId)
-                publishConfigs('archives')
-                properties = ['qa.level': 'basic', 'q.os': 'android', 'dev.team': 'core']
-                publishBuildInfo = true
-                publishArtifacts = true
-                publishPom = true
-                publishIvy = false
-            }
-        }
-    }
-}
+//
+//if (hasProperty("artifactoryUser") && hasProperty("artifactoryPass")) {
+//    artifactory {
+//        contextUrl = getProperty("artifactoryUrl")
+//        publish {
+//            repository {
+//                version = releaseVersion
+//                repoKey = "libs-release-local"
+//                username = getProperty("artifactoryUser")
+//                password = getProperty("artifactoryPass")
+//                maven = true
+//            }
+//
+//            defaults {
+//                publications(releaseArtifactId)
+//                publishConfigs('archives')
+//                properties = ['qa.level': 'basic', 'q.os': 'android', 'dev.team': 'core']
+//                publishBuildInfo = true
+//                publishArtifacts = true
+//                publishPom = true
+//                publishIvy = false
+//            }
+//        }
+//    }
+//}
 
 if (hasProperty("bintray_user") && hasProperty("bintray_key")) {
     if(!hasProperty("bintray_repo")) {

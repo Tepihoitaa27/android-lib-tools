@@ -90,7 +90,7 @@ case $key in
     shift # past value
     ;;
     -v|--verbosity)
-    publishType="$2"
+    verbosity="$2"
     shift # past argument
     shift # past value
     ;;
