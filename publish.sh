@@ -138,12 +138,15 @@ then
 fi
 
 publishTypeInternal=""
+publishTypeAdditions=""
 case "${publishType}" in
     local)
         publishTypeInternal="publishToMavenLocal"
+        publishTypeAdditions=""
         ;;
     bintray)
         publishTypeInternal="bintrayUpload"
+        publishTypeAdditions="${moduleName}:bintrayPublish"
         ;;
     *)
         echo "Unknown publish type: ${publishType}"
@@ -160,4 +163,4 @@ ${gradlePath} \
     ${moduleName}:androidJavadoc \
     ${moduleName}:androidJavadocJar \
     ${moduleName}:generatePomFileFor${projectNameCap}${artifactSuffixPom}Publication \
-    ${moduleName}:${publishTypeInternal} ${verbosity}
+    ${moduleName}:${publishTypeInternal} ${publishTypeAdditions} ${verbosity}
