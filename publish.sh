@@ -33,7 +33,7 @@ function usage() {
     echo "    -s --suffix       Artifact suffix"
     echo "    -n --name         Artifact name (using instead of project.name)"
     echo "       --clean        Clean build"
-    echo "    -t --type         Publish type. Default: \"local\". Variants: \"local\", \"bintray\", \"artifactory\""
+    echo "    -t --type         Publish type. Default: \"local\". Variants: \"local\", \"bintray\""
     echo "    -v --verbosity    Gradle verbosity: info, debug, stacktrace etc"
     echo ""
 }
