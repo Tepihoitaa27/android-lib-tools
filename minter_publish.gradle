@@ -155,58 +155,33 @@ publishing {
         }
     }
 }
-//
-//if (hasProperty("artifactoryUser") && hasProperty("artifactoryPass")) {
-//    artifactory {
-//        contextUrl = getProperty("artifactoryUrl")
-//        publish {
-//            repository {
-//                version = releaseVersion
-//                repoKey = "libs-release-local"
-//                username = getProperty("artifactoryUser")
-//                password = getProperty("artifactoryPass")
-//                maven = true
-//            }
-//
-//            defaults {
-//                publications(releaseArtifactId)
-//                publishConfigs('archives')
-//                properties = ['qa.level': 'basic', 'q.os': 'android', 'dev.team': 'core']
-//                publishBuildInfo = true
-//                publishArtifacts = true
-//                publishPom = true
-//                publishIvy = false
-//            }
-//        }
-//    }
-//}
 
-if (hasProperty("bintray_user") && hasProperty("bintray_key")) {
-    if(!hasProperty("bintray_repo")) {
-        throw new GradleException('"bintray_repo" name required')
-    }
-    if(!hasProperty("bintray_vcs")) {
-        throw new GradleException('"bintray_vcs" url required')
-    }
-    if(!hasProperty("bintray_org")) {
-        setProperty("bintray_org", getProperty("bintray_user"))
-    }
 
+if (hasProperty("minter_bintray_user") && hasProperty("minter_bintray_key")) {
+    println "Bintray upload: available"
     bintray {
-        user = getProperty("bintray_user")
-        key = getProperty("bintray_key")
+        publications = ["${releaseArtifactId}"]
+        user = getProperty("minter_bintray_user")
+        key = getProperty("minter_bintray_key")
         pkg {
-            repo = getProperty("bintray_repo")
+            repo = minter_org_repo
             name = releaseArtifactId
-            userOrg = getProperty("bintray_org")
+            userOrg = minter_org_name
             licenses = ['MIT']
-            vcsUrl = getProperty("bintray_vcs")
+            githubRepo = "MinterTeam/${rootProject.name}"
+            vcsUrl = "https://github.com/MinterTeam/${rootProject.name}.git"
+            issueTrackerUrl = "https://github.com/MinterTeam/${rootProject.name}/issues"
+            websiteUrl = "https://minter.network"
 
             version {
-                name = version
+                name = releaseVersion
                 desc = pomDescription
                 released = new Date()
+                vcsTag = releaseVersion
+
             }
         }
     }
+} else {
+    println "Bintray upload: unavailable"
 }

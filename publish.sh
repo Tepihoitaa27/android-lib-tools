@@ -33,7 +33,7 @@ function usage() {
     echo "    -s --suffix       Artifact suffix"
     echo "    -n --name         Artifact name (using instead of project.name)"
     echo "       --clean        Clean build"
-    echo "    -t --type         Publish type. Default: \"local\". Variants: \"local\", \"bintray\", \"artifactory\""
+    echo "    -t --type         Publish type. Default: \"local\". Variants: \"local\", \"bintray\""
     echo "    -v --verbosity    Gradle verbosity: info, debug, stacktrace etc"
     echo ""
 }
@@ -138,12 +138,15 @@ then
 fi
 
 publishTypeInternal=""
+publishTypeAdditions=""
 case "${publishType}" in
     local)
         publishTypeInternal="publishToMavenLocal"
+        publishTypeAdditions=""
         ;;
     bintray)
         publishTypeInternal="bintrayUpload"
+        publishTypeAdditions="${moduleName}:bintrayPublish"
         ;;
     *)
         echo "Unknown publish type: ${publishType}"
@@ -160,4 +163,4 @@ ${gradlePath} \
     ${moduleName}:androidJavadoc \
     ${moduleName}:androidJavadocJar \
     ${moduleName}:generatePomFileFor${projectNameCap}${artifactSuffixPom}Publication \
-    ${moduleName}:${publishTypeInternal} ${verbosity}
+    ${moduleName}:${publishTypeInternal} ${publishTypeAdditions} ${verbosity}
