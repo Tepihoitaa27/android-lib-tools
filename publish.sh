@@ -25,7 +25,7 @@ function clean() {
 }
 
 function usage() {
-    echo "Minter local maven publishing script"
+    echo "Minter maven publishing script"
     echo ""
     echo "./publish.sh"
     echo "    -h --help         Print this help"
@@ -160,14 +160,20 @@ fi
 
 publishTypeInternal=""
 publishTypeAdditions=""
+publishSuffix=""
+if [ "${artifactSuffix}" != "" ]
+then
+    publishSuffix="-${artifactSuffix}"
+fi
+
 case "${publishType}" in
     local)
-        publishTypeInternal="publishToMavenLocal"
+        publishTypeInternal="publish${flavorCap}${projectNameCap}${publishSuffix}PublicationToMavenLocal"
         publishTypeAdditions=""
         ;;
     bintray)
         publishTypeInternal="bintrayUpload"
-        publishTypeAdditions="${moduleName}:bintrayPublish"
+        publishTypeAdditions=""
         ;;
     *)
         echo "Unknown publish type: ${publishType}"
@@ -187,5 +193,5 @@ ${gradlePath} \
     ${moduleName}:androidSources \
     ${moduleName}:androidJavadoc \
     ${moduleName}:androidJavadocJar \
-    ${moduleName}:generatePomFileFor${projectNameCap}${artifactSuffixPom}Publication \
-    ${moduleName}:${publishTypeInternal} ${publishTypeAdditions} ${verbosity} ${additionalArgs}
+    ${moduleName}:generatePomFileFor${flavorCap}${projectNameCap}${artifactSuffixPom}Publication \
+    ${publishTypeInternal} ${publishTypeAdditions} ${verbosity} ${additionalArgs}
