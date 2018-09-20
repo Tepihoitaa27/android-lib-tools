@@ -12,10 +12,13 @@ artifactSuffixPom=""
 
 rootProjectName=$(${gradlePath} projects | grep "Root project '" | awk -F "'" '{print $2}')
 artifactName=${rootProjectName}
+artifactGroup=""
+artifactVersion=""
 moduleName=""
 tasks="0"
 publishType="local"
 verbosity=""
+additionalArgs=""
 
 function clean() {
     ./gradlew :clean
@@ -32,8 +35,11 @@ function usage() {
     echo "    -f --flavor       Choose flavor name by \"--list-flavors\""
     echo "    -s --suffix       Artifact suffix"
     echo "    -n --name         Artifact name (using instead of project.name)"
+    echo "    -g --group        Artifact group"
+    echo "       --version      Artifact version"
     echo "       --clean        Clean build"
     echo "    -t --type         Publish type. Default: \"local\". Variants: \"local\", \"bintray\""
+    echo "       --args         Additional gradlew args. Must be quoted"
     echo "    -v --verbosity    Gradle verbosity: info, debug, stacktrace etc"
     echo ""
 }
@@ -79,6 +85,16 @@ case $key in
     shift # past argument
     shift # past value
     ;;
+    -g|--group)
+    artifactGroup="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    --version)
+    artifactVersion="$2"
+    shift # past argument
+    shift # past value
+    ;;
     -f|--flavor)
     flavor="$2"
     shift # past argument
@@ -91,6 +107,11 @@ case $key in
     ;;
     -v|--verbosity)
     verbosity="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    --args)
+    additionalArgs="$2"
     shift # past argument
     shift # past value
     ;;
@@ -154,13 +175,17 @@ case "${publishType}" in
         ;;
 esac
 
+echo "Running commands in module: ${moduleName}"
+
 ${gradlePath} \
     -PbuildFlavor=${flavor} \
     -PartifactSuffix=${artifactSuffix} \
     -PbuildArtifactName=${artifactName} \
+    -PbuildArtifactGroup="${artifactGroup}" \
+    -PbuildArtifactVersion="${artifactVersion}" \
     ${moduleName}:assemble${flavorCap} \
     ${moduleName}:androidSources \
     ${moduleName}:androidJavadoc \
     ${moduleName}:androidJavadocJar \
     ${moduleName}:generatePomFileFor${projectNameCap}${artifactSuffixPom}Publication \
-    ${moduleName}:${publishTypeInternal} ${publishTypeAdditions} ${verbosity}
+    ${moduleName}:${publishTypeInternal} ${publishTypeAdditions} ${verbosity} ${additionalArgs}

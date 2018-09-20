@@ -42,6 +42,10 @@ task printFlavors {
 
 def pomDescription = (hasProperty("pomDescription") ? getProperty("pomDescription") : "Minter Blockchain Android SDK")
 
+def hasArgument(String arg) {
+    return hasProperty(arg) && !getProperty(arg).isEmpty()
+}
+
 group = getProperty("group")
 version = android.defaultConfig.versionName
 def releaseGroup = this.group
@@ -49,8 +53,16 @@ def releaseVersion = this.version
 def releaseArtifactId = project.name
 def artifactName = ""
 
-if(hasProperty("buildArtifactName") && !getProperty("buildArtifactName").isEmpty()) {
+if(hasArgument("buildArtifactName")) {
     releaseArtifactId = getProperty("buildArtifactName")
+}
+
+if(hasArgument("buildArtifactGroup")) {
+    releaseGroup = getProperty("buildArtifactGroup")
+}
+
+if(hasArgument("buildArtifactVersion")) {
+    releaseVersion = getProperty("buildArtifactVersion")
 }
 
 if(hasProperty("buildFlavor") && !getProperty("buildFlavor").isEmpty()) {
@@ -73,7 +85,7 @@ println "Artifact {" +
         "\n\tname (file): $buildDir/outputs/aar/${artifactName}" +
         "\n\troot project name: ${rootProject.name}" +
         "\n\tproject name: ${project.name}" +
-        "\n\timplementation example: implementation '${releaseGroup}:${releaseArtifactId}:${version}'" +
+        "\n\timplementation example: implementation '${releaseGroup}:${releaseArtifactId}:${releaseVersion}'" +
         "\n}"
 
 // rename output lib file to artifactName with aar extension
