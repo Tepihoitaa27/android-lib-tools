@@ -40,11 +40,28 @@ task printFlavors {
     }
 }
 
-def pomDescription = (hasProperty("pomDescription") ? getProperty("pomDescription") : "Minter Blockchain Android SDK")
 
 def hasArgument(String arg) {
     return hasProperty(arg) && !getProperty(arg).isEmpty()
 }
+
+ext.getArgumentOrDefault = { String arg, defValue ->
+    if (!hasProperty(arg)) {
+        return defValue
+    }
+
+    return getProperty(arg)
+}
+
+def getArgOrDefInternal(String arg, defVal) {
+    if(!hasProperty(arg)) {
+        return defVal
+    }
+
+    return getProperty(arg)
+}
+
+def pomDescription = getArgumentOrDefault("pomDescription", null)
 
 group = getProperty("group")
 version = android.defaultConfig.versionName
@@ -52,8 +69,11 @@ def releaseGroup = this.group
 def releaseVersion = this.version
 def releaseArtifactId = project.name
 def artifactName = ""
-def artifactNameNoExtension = ""
 def flavorName = ""
+def buildPomLicenses = getArgOrDefInternal("pomLicenses", {})
+def buildPomDevelopers = getArgOrDefInternal("pomDevelopers", {})
+def buildPomScm = getArgOrDefInternal("pomScm", {})
+def buildPomContributors = getArgOrDefInternal("pomContributors", {})
 
 if (hasArgument("buildArtifactName")) {
     releaseArtifactId = getProperty("buildArtifactName")
@@ -125,15 +145,14 @@ task androidSourcesJar(type: Jar) {
     from android.sourceSets.main.java.source
 }
 
-ext {
-    def publicationsExt = new ArrayList<String>()
-}
+
+
 
 publishing {
     publications {
         android.libraryVariants.each { var ->
-            println "Build Variant: ${var.flavorName}${var.buildType.name.capitalize()}${releaseArtifactId.capitalize()}"
-            "${var.flavorName}${var.buildType.name.capitalize()}${releaseArtifactId.capitalize()}"(MavenPublication) {
+            println "Build Variant: ${var.flavorName}${var.flavorName != "" ? var.buildType.name.capitalize() : var.buildType.name}${releaseArtifactId.capitalize()}"
+            "${var.flavorName}${var.flavorName != "" ? var.buildType.name.capitalize() : var.buildType.name}${releaseArtifactId.capitalize()}"(MavenPublication) {
                 groupId releaseGroup
                 artifactId releaseArtifactId
                 version releaseVersion
@@ -143,35 +162,28 @@ publishing {
                 artifact androidSourcesJar
                 artifact androidJavadocJar
 
+                pom {
+                    name = getArgumentOrDefault("pomName", buildArtifactName)
+                    url = getArgumentOrDefault("pomUrl", null)
+                    //noinspection UnnecessaryQualifiedReference
+                    inceptionYear = getArgumentOrDefault("pomInceptionYear", String.valueOf(Calendar.instance.get(Calendar.YEAR)))
+                    description = pomDescription
+                    licenses buildPomLicenses
+                    developers buildPomDevelopers
+                    scm buildPomScm
+                    contributors buildPomContributors
+                }
+
                 pom.withXml {
-                    asNode().appendNode("description", pomDescription)
-                    def licenses = asNode().appendNode("licenses")
-                    def mitLicense = licenses.appendNode("license")
-                    mitLicense.appendNode("name", "MIT License")
-                    mitLicense.appendNode("url", "https://opensource.org/licenses/MIT")
-                    mitLicense.appendNode("distribution", "repo")
-
-                    def developer = asNode().appendNode("developers").appendNode("developer")
-                    developer.appendNode("id", "edwardstock")
-                    developer.appendNode("name", "Eduard Maximovich")
-                    developer.appendNode("email", "edward.vstock@gmail.com")
-                    developer.appendNode("url", "https://github.com/edwardstock")
-                    developer.appendNode("roles").appendNode("role", "developer")
-                    developer.appendNode("timezone", "Europe/Moscow")
-
-                    def dependenciesNode = asNode().appendNode('dependencies')
-
-
-                    def depsVariantsSrc = [
-                            "implementation",
-                            "api",
-                            "compile"
-                    ]
+                    def deps = asNode().appendNode("dependencies")
+                    def depsVariantsSrc = ["implementation", "api", "compile"]
 
                     List<String> depsVariantsTarget = new ArrayList<>()
                     for (String depVar : depsVariantsSrc) {
                         depsVariantsTarget.add(depVar)
-                        depsVariantsTarget.add(var.flavorName + depVar.capitalize())
+                        if(var.flavorName != "") {
+                            depsVariantsTarget.add(var.flavorName + depVar.capitalize())
+                        }
                     }
 
                     depsVariantsTarget.each {
@@ -180,7 +192,7 @@ publishing {
                         configurations."${it}".allDependencies.each {
                             // Ensure dependencies such as fileTree are not included in the pom.
                             if (it.name != 'unspecified') {
-                                def dependencyNode = dependenciesNode.appendNode('dependency')
+                                def dependencyNode = deps.appendNode('dependency')
                                 dependencyNode.appendNode('groupId', it.group)
                                 dependencyNode.appendNode('artifactId', it.name)
                                 dependencyNode.appendNode('version', it.version)
@@ -192,6 +204,8 @@ publishing {
         }
     }
 }
+
+
 
 
 if (hasProperty("minter_bintray_user") && hasProperty("minter_bintray_key") && flavorName != "") {
