@@ -163,7 +163,7 @@ publishing {
                 artifact androidJavadocJar
 
                 pom {
-                    name = getArgumentOrDefault("pomName", buildArtifactName)
+                    name = getArgumentOrDefault("pomName", getArgumentOrDefault('buildArtifactName', ""))
                     url = getArgumentOrDefault("pomUrl", null)
                     //noinspection UnnecessaryQualifiedReference
                     inceptionYear = getArgumentOrDefault("pomInceptionYear", String.valueOf(Calendar.instance.get(Calendar.YEAR)))
@@ -204,9 +204,6 @@ publishing {
         }
     }
 }
-
-
-
 
 if (hasProperty("minter_bintray_user") && hasProperty("minter_bintray_key") && flavorName != "") {
 
