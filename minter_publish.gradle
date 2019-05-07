@@ -148,54 +148,56 @@ task androidSourcesJar(type: Jar) {
 
 
 
-publishing {
-    publications {
-        android.libraryVariants.each { var ->
-            println "Build Variant: ${var.flavorName}${var.flavorName != "" ? var.buildType.name.capitalize() : var.buildType.name}${releaseArtifactId.capitalize()}"
-            "${var.flavorName}${var.flavorName != "" ? var.buildType.name.capitalize() : var.buildType.name}${releaseArtifactId.capitalize()}"(MavenPublication) {
-                groupId releaseGroup
-                artifactId releaseArtifactId
-                version releaseVersion
+afterEvaluate {
+    publishing {
+        publications {
+            android.libraryVariants.each { var ->
+                println "Build Variant: ${var.flavorName}${var.flavorName != "" ? var.buildType.name.capitalize() : var.buildType.name}${releaseArtifactId.capitalize()}"
+                "${var.flavorName}${var.flavorName != "" ? var.buildType.name.capitalize() : var.buildType.name}${releaseArtifactId.capitalize()}"(MavenPublication) {
+                    groupId releaseGroup
+                    artifactId releaseArtifactId
+                    version releaseVersion
 
-                // Tell maven to prepare the generated "*.aar" file for publishing
-                artifact("$buildDir/outputs/aar/${artifactName}")
-                artifact androidSourcesJar
-                artifact androidJavadocJar
+                    // Tell maven to prepare the generated "*.aar" file for publishing
+                    artifact("$buildDir/outputs/aar/${artifactName}")
+                    artifact androidSourcesJar
+                    artifact androidJavadocJar
 
-                pom {
-                    name = getArgumentOrDefault("pomName", getArgumentOrDefault('buildArtifactName', ""))
-                    url = getArgumentOrDefault("pomUrl", null)
-                    //noinspection UnnecessaryQualifiedReference
-                    inceptionYear = getArgumentOrDefault("pomInceptionYear", String.valueOf(Calendar.instance.get(Calendar.YEAR)))
-                    description = pomDescription
-                    licenses buildPomLicenses
-                    developers buildPomDevelopers
-                    scm buildPomScm
-                    contributors buildPomContributors
-                }
-
-                pom.withXml {
-                    def deps = asNode().appendNode("dependencies")
-                    def depsVariantsSrc = ["implementation", "api", "compile"]
-
-                    List<String> depsVariantsTarget = new ArrayList<>()
-                    for (String depVar : depsVariantsSrc) {
-                        depsVariantsTarget.add(depVar)
-                        if(var.flavorName != "") {
-                            depsVariantsTarget.add(var.flavorName + depVar.capitalize())
-                        }
+                    pom {
+                        name = getArgumentOrDefault("pomName", getArgumentOrDefault('buildArtifactName', ""))
+                        url = getArgumentOrDefault("pomUrl", null)
+                        //noinspection UnnecessaryQualifiedReference
+                        inceptionYear = getArgumentOrDefault("pomInceptionYear", String.valueOf(Calendar.instance.get(Calendar.YEAR)))
+                        description = pomDescription
+                        licenses buildPomLicenses
+                        developers buildPomDevelopers
+                        scm buildPomScm
+                        contributors buildPomContributors
                     }
 
-                    depsVariantsTarget.each {
-                        it
-                        // Iterate over the implementation dependencies (we don't want the test ones), adding a <dependency> node for each
-                        configurations."${it}".allDependencies.each {
-                            // Ensure dependencies such as fileTree are not included in the pom.
-                            if (it.name != 'unspecified') {
-                                def dependencyNode = deps.appendNode('dependency')
-                                dependencyNode.appendNode('groupId', it.group)
-                                dependencyNode.appendNode('artifactId', it.name)
-                                dependencyNode.appendNode('version', it.version)
+                    pom.withXml {
+                        def deps = asNode().appendNode("dependencies")
+                        def depsVariantsSrc = ["implementation", "api", "compile"]
+
+                        List<String> depsVariantsTarget = new ArrayList<>()
+                        for (String depVar : depsVariantsSrc) {
+                            depsVariantsTarget.add(depVar)
+                            if(var.flavorName != "") {
+                                depsVariantsTarget.add(var.flavorName + depVar.capitalize())
+                            }
+                        }
+
+                        depsVariantsTarget.each {
+                            it
+                            // Iterate over the implementation dependencies (we don't want the test ones), adding a <dependency> node for each
+                            configurations."${it}".allDependencies.each {
+                                // Ensure dependencies such as fileTree are not included in the pom.
+                                if (it.name != 'unspecified') {
+                                    def dependencyNode = deps.appendNode('dependency')
+                                    dependencyNode.appendNode('groupId', it.group)
+                                    dependencyNode.appendNode('artifactId', it.name)
+                                    dependencyNode.appendNode('version', it.version)
+                                }
                             }
                         }
                     }
