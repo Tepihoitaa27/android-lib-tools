@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 function capitalize() {
   local outRes=$(echo ${1} | awk '{ for ( i=1; i <= NF; i++) {   sub(".", substr(toupper($i),1,1) , $i)  } print }')
   echo "${outRes}"
@@ -189,6 +191,8 @@ case "${publishType}" in
 esac
 
 echo "Running commands in module: ${moduleNameGradle}"
+
+set -x
 
 ${gradlePath} \
     -PbuildFlavor=${flavor} \
