@@ -1,5 +1,5 @@
 /*
- * Copyright (C) by MinterTeam. 2018
+ * Copyright (C) by MinterTeam. 2019
  * @link <a href="https://github.com/MinterTeam">Org Github</a>
  * @link <a href="https://github.com/edwardstock">Maintainer Github</a>
  *
@@ -262,11 +262,11 @@ ext {
 if (bt_user != null && bt_key != null && flavorName != "") {
 
     println "Bintray upload: available; user: ${bt_user}"
-    println "Publication:   ${flavorName}${project.name.capitalize()}"
+    println "Publication:   ${flavorName}${project.name.capitalize()}${targetArtifactSuffix}"
     bintray {
         user = bt_user
         key = bt_key
-        publications = ["${flavorName}${project.name.capitalize()}"]
+        publications = ["${flavorName}${project.name.capitalize()}${targetArtifactSuffix}"]
         pkg {
             repo = localProps['bintray_repo']
             name = releaseArtifactId

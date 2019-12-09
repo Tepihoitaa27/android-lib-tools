@@ -195,14 +195,55 @@ echo "Running commands in module: ${moduleNameGradle}"
 set -x
 
 ${gradlePath} \
+    --no-configure-on-demand --no-parallel \
     -PbuildFlavor=${flavor} \
     -PartifactSuffix=${artifactSuffix} \
     -PbuildArtifactName=${artifactName} \
     -PbuildArtifactGroup="${artifactGroup}" \
     -PbuildArtifactVersion="${artifactVersion}" \
-    ${moduleNameGradle}:assemble${flavorCap} \
-    ${moduleNameGradle}:androidSources \
-    ${moduleNameGradle}:androidJavadoc \
-    ${moduleNameGradle}:androidJavadocJar \
-    ${moduleNameGradle}:generatePomFileFor${flavorCap}${projectNameCap}${artifactSuffixPom}Publication \
-    ${publishTypeInternal} ${publishTypeAdditions} ${verbosity} ${additionalArgs}
+    ${moduleNameGradle}:assemble${flavorCap} ${verbosity} ${additionalArgs}
+
+${gradlePath} \
+    --no-configure-on-demand --no-parallel \
+    -PbuildFlavor=${flavor} \
+    -PartifactSuffix=${artifactSuffix} \
+    -PbuildArtifactName=${artifactName} \
+    -PbuildArtifactGroup="${artifactGroup}" \
+    -PbuildArtifactVersion="${artifactVersion}" \
+    ${moduleNameGradle}:androidSources ${verbosity} ${additionalArgs}
+
+${gradlePath} \
+    --no-configure-on-demand --no-parallel \
+    -PbuildFlavor=${flavor} \
+    -PartifactSuffix=${artifactSuffix} \
+    -PbuildArtifactName=${artifactName} \
+    -PbuildArtifactGroup="${artifactGroup}" \
+    -PbuildArtifactVersion="${artifactVersion}" \
+    ${moduleNameGradle}:androidJavadoc ${verbosity} ${additionalArgs}
+
+${gradlePath} \
+    --no-configure-on-demand --no-parallel \
+    -PbuildFlavor=${flavor} \
+    -PartifactSuffix=${artifactSuffix} \
+    -PbuildArtifactName=${artifactName} \
+    -PbuildArtifactGroup="${artifactGroup}" \
+    -PbuildArtifactVersion="${artifactVersion}" \
+    ${moduleNameGradle}:androidJavadocJar ${verbosity} ${additionalArgs}
+
+${gradlePath} \
+    --no-configure-on-demand --no-parallel \
+    -PbuildFlavor=${flavor} \
+    -PartifactSuffix=${artifactSuffix} \
+    -PbuildArtifactName=${artifactName} \
+    -PbuildArtifactGroup="${artifactGroup}" \
+    -PbuildArtifactVersion="${artifactVersion}" \
+    ${moduleNameGradle}:generatePomFileFor${flavorCap}${projectNameCap}${artifactSuffixPom}Publication ${verbosity} ${additionalArgs}
+
+${gradlePath} \
+    --no-configure-on-demand --no-parallel \
+    -PbuildFlavor=${flavor} \
+    -PartifactSuffix=${artifactSuffix} \
+    -PbuildArtifactName=${artifactName} \
+    -PbuildArtifactGroup="${artifactGroup}" \
+    -PbuildArtifactVersion="${artifactVersion}" \
+    ${moduleNameGradle}:${publishTypeInternal} ${verbosity} ${additionalArgs}
