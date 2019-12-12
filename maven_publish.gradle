@@ -265,8 +265,6 @@ ext {
     bt_key = firstNotNull(System.getenv("BINTRAY_API_KEY"), getProperty('bintray_key'), localProps.get('bintray_key', ""))
 }
 
-println bt_key
-
 if (bt_user != null && bt_key != null && flavorName != "") {
 
     println "Bintray upload: available; user: ${bt_user}"
