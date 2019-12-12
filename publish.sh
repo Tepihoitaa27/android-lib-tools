@@ -246,4 +246,4 @@ ${gradlePath} \
     -PbuildArtifactName=${artifactName} \
     -PbuildArtifactGroup="${artifactGroup}" \
     -PbuildArtifactVersion="${artifactVersion}" \
-    ${moduleNameGradle}:${publishTypeInternal} ${verbosity} ${additionalArgs}
+    ${moduleNameGradle}:${publishTypeInternal} ${moduleNameGradle}:publish ${verbosity} ${additionalArgs}

@@ -254,10 +254,18 @@ afterEvaluate {
     }
 }
 
-ext {
-    bt_user = localProps.get('bintray_user', getProperty('bintray_user'))
-    bt_key = localProps.get('bintray_key', getProperty('bintray_key'))
+def static firstNotNull(String... args) {
+    for(String s: args) {
+        if(s != null) return s;
+    }
 }
+
+ext {
+    bt_user = firstNotNull(System.getenv("BINTRAY_USER"), getProperty('bintray_user'), localProps.get('bintray_user', ""))
+    bt_key = firstNotNull(System.getenv("BINTRAY_API_KEY"), getProperty('bintray_key'), localProps.get('bintray_key', ""))
+}
+
+println bt_key
 
 if (bt_user != null && bt_key != null && flavorName != "") {
 
