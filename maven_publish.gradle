@@ -43,6 +43,19 @@ task printFlavors {
     }
 }
 
+def static firstNotNull(String... args) {
+    for(String s: args) {
+        if(s != null) return s;
+    }
+}
+
+def getPropertySafe(String name) {
+    if(!hasProperty(name))
+        return ""
+
+    return getProperty(name);
+}
+
 
 def hasArgument(String arg) {
     return hasProperty(arg) && !getProperty(arg).isEmpty()
@@ -254,15 +267,9 @@ afterEvaluate {
     }
 }
 
-def static firstNotNull(String... args) {
-    for(String s: args) {
-        if(s != null) return s;
-    }
-}
-
 ext {
-    bt_user = firstNotNull(System.getenv("BINTRAY_USER"),    localProps.get('bintray_user', getProperty('bintray_user')) )
-    bt_key =  firstNotNull(System.getenv("BINTRAY_API_KEY"), localProps.get('bintray_key',  getProperty('bintray_key')) )
+    bt_user = firstNotNull(System.getenv("BINTRAY_USER"),    localProps.get('bintray_user', getPropertySafe('bintray_user')) )
+    bt_key =  firstNotNull(System.getenv("BINTRAY_API_KEY"), localProps.get('bintray_key',  getPropertySafe('bintray_key')) )
 }
 
 if (bt_user != null && bt_key != null && flavorName != "") {
