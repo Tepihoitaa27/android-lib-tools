@@ -268,39 +268,25 @@ afterEvaluate {
 }
 
 ext {
-    bt_user = firstNotNull(System.getenv("BINTRAY_USER"),    localProps.get('bintray_user', getPropertySafe('bintray_user')) )
-    bt_key =  firstNotNull(System.getenv("BINTRAY_API_KEY"), localProps.get('bintray_key',  getPropertySafe('bintray_key')) )
+    artifactory_user = firstNotNull(System.getenv("ARTIFACTORY_USER"),    localProps.get('artifactory_user', getPropertySafe('artifactory_user')) )
+    artifactory_pass = firstNotNull(System.getenv("ARTIFACTORY_PASS"),    localProps.get('artifactory_pass', getPropertySafe('artifactory_pass')) )
 }
 
-if (bt_user != null && bt_key != null && flavorName != "") {
-
-    println "Bintray upload: available; user: ${bt_user}"
-    println "Publication:   ${flavorName}${project.name.capitalize()}${targetArtifactSuffix}"
-    bintray {
-        user = bt_user
-        key = bt_key
-        publications = ["${flavorName}${project.name.capitalize()}${targetArtifactSuffix}"]
-        pkg {
-            repo = localProps['bintray_repo']
-            name = releaseArtifactId
-            userOrg = localProps['bintray_user_org']
-            licenses = [localProps['bintray_license_name']]
-            githubRepo = localProps["bintray_gh_repo"]
-            vcsUrl = "${localProps['bintray_gh_repo']}.git"
-            issueTrackerUrl = "${localProps['bintray_gh_repo']}/issues"
-            websiteUrl = localProps['bintray_website']
-
-            version {
-                name = releaseVersion
-                desc = pomDescription
-                released = new Date()
-                vcsTag = releaseVersion
-
-            }
+// full docs: https://www.jfrog.com/confluence/display/JFROG/Gradle+Artifactory+Plugin
+artifactory {
+    publish {
+        contextUrl = localProps['artifactory_repo']
+        repository {
+            repoKey = localProps['artifactory_repo_key']   //The Artifactory repository key to publish to
+            username = artifactory_user          //The publisher user name
+            password = artifactory_pass        //The publisher password or API key
+        }
+        defaults {
+            publications("${flavorName}${project.name.capitalize()}${targetArtifactSuffix}")
+            publishBuildInfo = true   //Publish build-info to Artifactory (true by default)
+            publishArtifacts = true   //Publish artifacts to Artifactory (true by default)
+            publishPom = true   //Publish generated POM files to Artifactory (true by default).
+            publishIvy = false
         }
     }
-
-
-} else {
-    println "Bintray upload: unavailable"
 }

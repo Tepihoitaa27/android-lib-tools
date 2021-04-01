@@ -41,7 +41,7 @@ function usage() {
     echo "    -g --group        Artifact group"
     echo "       --version      Artifact version"
     echo "       --clean        Clean build"
-    echo "    -t --type         Publish type. Default: \"local\". Variants: \"local\", \"bintray\""
+    echo "    -t --type         Publish type. Default: \"local\". Variants: \"local\", \"artifactory\""
     echo "       --args         Additional gradlew args. Must be quoted"
     echo "    -v --verbosity    Gradle verbosity: info, debug, stacktrace etc"
     echo ""
@@ -181,7 +181,12 @@ case "${publishType}" in
         publishTypeAdditions=""
         ;;
     bintray)
-        publishTypeInternal="bintrayUpload"
+        echo "[URGENT] Bintray publish is now just an alias for artifactoryPublish command as bintray is shutting down"
+        publishTypeInternal="artifactoryPublish"
+        publishTypeAdditions=""
+        ;;
+    artifactory)
+        publishTypeInternal="artifactoryPublish"
         publishTypeAdditions=""
         ;;
     *)
