@@ -12,7 +12,7 @@ flavor=""
 artifactSuffix=""
 artifactSuffixPom=""
 
-rootProjectName=$(${gradlePath} projects | grep "Root project '" | awk -F "'" '{print $2}')
+rootProjectName=$(${gradlePath} projects | grep "Root project '" | awk -F "'" '{print $2}' | head -n1)
 artifactName=${rootProjectName}
 artifactGroup=""
 artifactVersion=""

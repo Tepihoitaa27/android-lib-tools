@@ -170,7 +170,6 @@ task androidJavadoc(type: Javadoc) {
     source = android.sourceSets.main.java.sourceFiles
     println android.sourceSets.main.java.sourceFiles
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    classpath += configurations.compile
 }
 
 // build a jar with javadoc
@@ -237,27 +236,30 @@ afterEvaluate {
 
                             depsVariantsTarget.each {depType ->
                                 // Iterate over the implementation dependencies (we don't want the test ones), adding a <dependency> node for each
-                                configurations."${depType}".allDependencies.each { dep ->
-                                    // Ensure dependencies such as fileTree are not included in the pom.
-                                    if (dep.name != 'unspecified') {
-                                        def fullName = "${dep.group}:${dep.name}:${dep.version}"
-                                        // don't duplicate deps in POM
-                                        if(!allDeps.contains(fullName)) {
-                                            allDeps.add(fullName)
-                                            println "${depType}:  ${dep.group}:${dep.name}:${dep.version}\n"
-                                            def dependencyNode = deps.appendNode('dependency')
-                                            dependencyNode.appendNode('groupId', dep.group)
-                                            dependencyNode.appendNode('artifactId', dep.name)
-                                            dependencyNode.appendNode('version', dep.version)
-                                            dep.artifacts.each { art ->
-                                                if(!art.type.isEmpty()) {
-                                                    dependencyNode.appendNode('type', art.type)
+                                if(configurations.findByName(depType) != null) {
+                                    configurations."${depType}".allDependencies.each { dep ->
+                                        // Ensure dependencies such as fileTree are not included in the pom.
+                                        if (dep.name != 'unspecified') {
+                                            def fullName = "${dep.group}:${dep.name}:${dep.version}"
+                                            // don't duplicate deps in POM
+                                            if(!allDeps.contains(fullName)) {
+                                                allDeps.add(fullName)
+                                                println "${depType}:  ${dep.group}:${dep.name}:${dep.version}\n"
+                                                def dependencyNode = deps.appendNode('dependency')
+                                                dependencyNode.appendNode('groupId', dep.group)
+                                                dependencyNode.appendNode('artifactId', dep.name)
+                                                dependencyNode.appendNode('version', dep.version)
+                                                dep.artifacts.each { art ->
+                                                    if(!art.type.isEmpty()) {
+                                                        dependencyNode.appendNode('type', art.type)
+                                                    }
                                                 }
                                             }
-                                        }
 
+                                        }
                                     }
                                 }
+
                             }
                         }
                     }
@@ -290,3 +292,4 @@ artifactory {
         }
     }
 }
+
